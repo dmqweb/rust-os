@@ -9,3 +9,5 @@ panic = "abort" #禁止panic时展开调用栈
 panic = "abort"
 
 [dependencies]
+#将可执行程序转换为可引导的映像需要将其与引导程序进行链接，引导程序负责初始化CPU并加载内核
+bootloader = "0.9" # 直接使用现有的BIOS引导程序
