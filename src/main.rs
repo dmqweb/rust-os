@@ -1,5 +1,6 @@
 #![no_std] //禁用标准库
 #![no_main] //覆盖默认入口点，因为没有调用它的底层运行时
+mod vga_buffer;
 // 禁用标准库之后，需要添加编译器在panic时应该调用的函数
 use core::panic::PanicInfo;
 #[panic_handler]
@@ -19,6 +20,7 @@ pub extern "C" fn _start() ->!{//类unix操作系统以_start作为入口名称
             *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
         }
     }
+    vga_buffer::print_something();
     loop {
 
     }
