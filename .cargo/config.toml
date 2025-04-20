@@ -15,5 +15,6 @@ build-std-features = ["compiler-builtins-mem"]
 #配置build时默认的--target参数
 [build]
 target = "x86_64-blog_os.json"
+#指定编译完之后运行可执行文件的运行器
 [target.x86_64-blog_os]
 runner = "qemu-system-x86_64"
