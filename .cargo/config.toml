@@ -11,3 +11,9 @@ rustflags = ["-C", "link-args=-e __start -static -nostartfiles"]
 [unstable]
 #重新编译核心和其他标准库crate，而不是使用Rust安装附带的预编译版本
 build-std = ["core", "compiler_builtins"]
+build-std-features = ["compiler-builtins-mem"]
+#配置build时默认的--target参数
+[build]
+target = "x86_64-blog_os.json"
+[target.x86_64-blog_os]
+runner = "qemu-system-x86_64"
