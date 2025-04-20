@@ -127,3 +127,17 @@ pub fn print_something() {
     writer.write_string("ello! ");
     write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
 }
+#[macro_export]//暴露当前宏到根命名空间，需要注意暴露后导入时要从crate::println根模块导入
+macro_rules! print { //定义print宏
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+#[macro_export]
+macro_rules! println { //定义println宏
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
