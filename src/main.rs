@@ -21,9 +21,10 @@ pub extern "C" fn _start() ->!{//类unix操作系统以_start作为入口名称
         }
     }
     vga_buffer::print_something();
-    loop {
-
-    }
+    use core::fmt::Write;
+    vga_buffer::WRITER.lock().write_str("Hello again").unwrap();
+    write!(vga_buffer::WRITER.lock(), ", some numbers: {} {}", 42, 1.337).unwrap();
+    loop {}
 }
 // 运行命令：rustup target add thumbv7em-none-eabihf下载一个嵌入式ARM系统
 // 运行cargo build --target thumbv7em-none-eabihf可以为此目标构建独立的可执行文件

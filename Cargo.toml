@@ -12,3 +12,7 @@ panic = "abort"
 #将可执行程序转换为可引导的映像需要将其与引导程序进行链接，引导程序负责初始化CPU并加载内核
 bootloader = "0.9" # 直接使用现有的BIOS引导程序
 volatile = "0.2.6" # 避免读写操作被rust编译器优化
+spin = "0.5.2" # 自旋锁
+[dependencies.lazy_static] # 延迟静态变量初始化
+version = "1.0"
+features = ["spin_no_std"] # 程序不链接标准库

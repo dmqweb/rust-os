@@ -1,5 +1,7 @@
 use core::fmt;
+use lazy_static::lazy_static;
 use volatile::Volatile;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[derive(Debug,Clone,Copy,PartialEq,Eq)]
@@ -42,6 +44,7 @@ const BUFFER_WIDTH: usize = 80;
 struct Buffer { //描述字符缓冲区，使用Volatile避免写操作被rust编译器优化
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
+//vga缓冲区允许操作系统或程序直接操作内存，直接控制显存中的字符和样式，而无需复杂的图形操作
 pub struct Writer {//输出字符到屏幕
     column_position: usize,
     color_code: ColorCode,
@@ -78,13 +81,40 @@ impl Writer {
             }
         }
     }
-    fn new_line(&mut self) {/* TODO */}
+    fn new_line(&mut self) {
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(character);
+            }
+        }
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+    }
+    fn clear_row(&mut self, row: usize) {
+        let blank = ScreenChar {
+            ascii_character: b' ',
+            color_code: self.color_code,
+        };
+        for col in 0..BUFFER_WIDTH {//写入BUFFER_WIDTH个空格以清空整行
+            self.buffer.chars[row][col].write(blank);
+        }
+    }
 }
 impl fmt::Write for Writer {//为Writer类型实现write!函数宏
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_string(s);
         Ok(())
     }
+}
+//常量求值器会在编译时处理，但还不能在编译时直接转换裸指针到变量的引用，所以使用lazy_static延迟静态变量的初始化
+lazy_static! {
+     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {//单例模式
+        column_position: 0,
+        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        // oxb8000是vga缓冲区的地址，将其转为裸指针进行操作
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
 }
 pub fn print_something() {
     use core::fmt::Write;
