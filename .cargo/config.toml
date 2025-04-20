@@ -16,6 +16,10 @@ build-std-features = ["compiler-builtins-mem"]
 #配置build时默认的--target参数
 [build]
 target = "x86_64-blog_os.json"
-#指定编译完之后运行可执行文件的运行器，在浏览器下载qemu-system-x86_64
+#指定编译完成后运行可执行文件的运行器，需要在浏览器中下载
 [target.x86_64-blog_os]
-runner = "qemu-system-x86_64"
+#runner = "qemu-system-x86_64"
+#筛选出三元组中宿主设置了none的所有编译目标
+[target.'cfg(target_os = "none")']
+#使用cargo run即可编译内核并在QEMU中启动
+runner = "bootimage runner"
