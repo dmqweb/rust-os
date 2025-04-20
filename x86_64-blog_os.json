@@ -1,0 +1,17 @@
+{
+  "llvm-target": "x86_64-unknown-none",
+  "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128",
+  "arch": "x86_64",
+  "target-endian": "little",
+  "target-pointer-width": "64",
+  "target-c-int-width": "32",
+  "os": "none", //因为需要在裸机上运行
+  "executables": true,
+  "linker-flavor": "ld.lld",//不使用平台的默认链接器，因为不支持linux目标
+  "linker": "rust-lld",//使用rust附带的跨平台LLD链接器来链接内核
+  "panic-strategy": "abort",//不支持panic时展开堆栈，而是直接终止
+  //禁用mmx和sse功能，其决定了对单指令多数据的支持、可以提高性能，但内核需要将所有寄存器恢复到原始状态，即要加载完整的SIMD状态到主内存中
+  //同时增加soft-float功能基于普通整数的软件函数模拟所有浮点运算
+  "features": "-mmx,-sse,+soft-float",
+  "rustc-abi": "x86-softfloat",//添加soft-float功能
+}
