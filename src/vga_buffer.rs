@@ -1,3 +1,6 @@
+use core::fmt;
+use volatile::Volatile;
+
 #[allow(dead_code)]
 #[derive(Debug,Clone,Copy,PartialEq,Eq)]
 #[repr(u8)] //指定枚举的底层存储为u8类型
@@ -36,8 +39,8 @@ struct ScreenChar { //描述字符
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 #[repr(transparent)]
-struct Buffer { //描述字符缓冲区
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+struct Buffer { //描述字符缓冲区，使用Volatile避免写操作被rust编译器优化
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 pub struct Writer {//输出字符到屏幕
     column_position: usize,
@@ -55,10 +58,11 @@ impl Writer {
                 let row = BUFFER_HEIGHT - 1;
                 let col = self.column_position;
                 let color_code = self.color_code;
-                self.buffer.chars[row][col] = ScreenChar {
+                // 改为调用write以保证rust编译器不会优化这个写操作
+                self.buffer.chars[row][col].write(ScreenChar{
                     ascii_character: byte,
                     color_code,
-                };
+                });
                 self.column_position += 1;
             }
         }
@@ -76,13 +80,20 @@ impl Writer {
     }
     fn new_line(&mut self) {/* TODO */}
 }
+impl fmt::Write for Writer {//为Writer类型实现write!函数宏
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_string(s);
+        Ok(())
+    }
+}
 pub fn print_something() {
+    use core::fmt::Write;
     let mut writer = Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     };
     writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!");//ö是两个字节（utf-8特点9）
+    writer.write_string("ello! ");
+    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
 }
