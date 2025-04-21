@@ -8,8 +8,10 @@ use blog_os::println;
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
-    blog_os::init(); // new
-    x86_64::instructions::interrupts::int3(); // new
+    blog_os::init();
+    unsafe {
+        *(0xdeadbeef as *mut u8) = 42;
+    };
     #[cfg(test)]
     test_main();
     println!("It did not crash!");

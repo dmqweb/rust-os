@@ -8,6 +8,7 @@ use core::panic::PanicInfo;
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
+pub mod gdt;
 pub trait Testable {
     fn run(&self) -> ();
 }
@@ -28,7 +29,7 @@ pub fn test_runner(tests: &[&dyn Testable]) {
     }
     exit_qemu(QemuExitCode::Success);
 }
-pub fn test_panic_handler(info: &PanicInfo) -> ! {
+pub fn test_panic_handler(info: &PanicInfo) -> ! {//格式化错误信息
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
@@ -60,5 +61,6 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 pub fn init() {//main.rs、lib.rs及单元测试共享的初始化逻辑
+    gdt::init();
     interrupts::init_idt();
 }
