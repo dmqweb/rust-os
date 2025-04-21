@@ -4,15 +4,24 @@ version = "0.1.0"
 edition = "2018"
 
 [profile.dev]
-panic = "abort" #禁止panic时展开调用栈
+#panic = "abort" #禁止panic时展开调用栈
 [profile.release]
-panic = "abort"
+#panic = "abort" bug:https://github.com/rust-lang/cargo/issues/7359
 
 [dependencies]
 #将可执行程序转换为可引导的映像需要将其与引导程序进行链接，引导程序负责初始化CPU并加载内核
 bootloader = "0.9" # 直接使用现有的BIOS引导程序
 volatile = "0.2.6" # 避免读写操作被rust编译器优化
 spin = "0.5.2" # 自旋锁
+x86_64 = "0.14.2" # 使用其提供的抽象调用共isa-debug-exit的in/out指令
+uart_16550 = "0.2.0" # 通过串行端口将QEMU中的输出重定向（因为测试框架运行后退出，看不到输出）
 [dependencies.lazy_static] # 延迟静态变量初始化
 version = "1.0"
 features = ["spin_no_std"] # 程序不链接标准库
+[package.metadata.bootimage] # 从客户系统退出QEMU，解决test_main返回值导致无限递归的问题
+# isa-debug-exit设备当一个value写入iobase指定的端口时，会以不同的退出状态退出，暴露出in/out指令
+test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]#设备名、端口（未使用）、端口大小
+#test-args = [ # 重定向输出到serial
+#    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio"
+#]
+test-success-exit-code = 33 # 将指定的推出代码映射到退出代码0
