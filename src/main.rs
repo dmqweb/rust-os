@@ -8,9 +8,12 @@ mod serial;
 use core::fmt::Write;
 // 禁用标准库之后，需要添加编译器在panic时应该调用的函数
 use core::panic::PanicInfo;
+#[cfg(test)]//条件编译、使测试模式下使用不同的panic处理方式
 #[panic_handler]//panic发生时调用的函数
-fn panic(info:&PanicInfo)->!{
-    println!("{}",info);
+fn panic(info:&PanicInfo) -> ! {
+    serial_println!("[failed]\n");//使用serial_println让失败的test显示在命令行中
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
     loop {}
 }
 static HELLO:&[u8] = b"Hello World";
@@ -33,7 +36,7 @@ pub fn test_runner(tests: &[&dyn Fn()]) {//测试运行器
 #[test_case]
 fn trivial_assertion() {
     serial_print!("trivial assertion... ");
-    assert_eq!(1, 1);
+    assert_eq!(0, 1);
     serial_println!("[ok]");
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
