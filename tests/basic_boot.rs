@@ -3,13 +3,11 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
-#![test_runner(blog_os::test_runner)]
 #![allow(dead_code,unused_variables,unused)]
 use core::panic::PanicInfo;
-#[unsafe(no_mangle)] // don't mangle the name of this function
+#[unsafe(no_mangle)] // 编译时保持函数名
 pub extern "C" fn _start() -> ! {
     test_main();
-
     loop {}
 }
 fn test_runner(tests: &[&dyn Fn()]) {
