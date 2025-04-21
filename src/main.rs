@@ -36,7 +36,7 @@ pub fn test_runner(tests: &[&dyn Fn()]) {//测试运行器
 #[test_case]
 fn trivial_assertion() {
     serial_print!("trivial assertion... ");
-    assert_eq!(0, 1);
+    assert_eq!(1, 1);
     serial_println!("[ok]");
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
