@@ -27,3 +27,6 @@ test-args = [ # 重定向输出到serial
 ]
 test-success-exit-code = 33 # 将指定的推出代码映射到退出代码0
 test-timeout = 300 # bootiamge超时时间，超时会panic，防止无限循环
+[[test]] # 为测试禁用harness标志，定义不讲test runner用于集成测试中，使得集成测试像普通程序一样运行（简化）
+name = "should_panic"
+harness = false
