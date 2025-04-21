@@ -20,8 +20,8 @@ version = "1.0"
 features = ["spin_no_std"] # 程序不链接标准库
 [package.metadata.bootimage] # 从客户系统退出QEMU，解决test_main返回值导致无限递归的问题
 # isa-debug-exit设备当一个value写入iobase指定的端口时，会以不同的退出状态退出，暴露出in/out指令
-test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]#设备名、端口（未使用）、端口大小
-#test-args = [ # 重定向输出到serial
-#    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio"
-#]
+#test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]#设备名、端口（未使用）、端口大小
+test-args = [ # 重定向输出到serial
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio"
+]
 test-success-exit-code = 33 # 将指定的推出代码映射到退出代码0
