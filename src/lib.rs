@@ -1,11 +1,13 @@
 #![no_std] //分割main.rs中公共部分为库，提供给主逻辑和tests使用
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
+#![feature(abi_x86_interrupt)] //x86-interrupt特性不稳定，需要手动启用
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 use core::panic::PanicInfo;
 pub mod serial;
 pub mod vga_buffer;
+pub mod interrupts;
 pub trait Testable {
     fn run(&self) -> ();
 }
@@ -32,10 +34,10 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     exit_qemu(QemuExitCode::Failed);
     loop {}
 }
-/// Entry point for `cargo test`
 #[cfg(test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
+    init();
     test_main();
     loop {}
 }
@@ -56,4 +58,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
     }
+}
+pub fn init() {//main.rs、lib.rs及单元测试共享的初始化逻辑
+    interrupts::init_idt();
 }
