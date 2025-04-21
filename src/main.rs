@@ -29,15 +29,13 @@ pub extern "C" fn _start() ->!{//类unix操作系统以_start作为入口名称
 pub fn test_runner(tests: &[&dyn Fn()]) {//测试运行器
     serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
     exit_qemu(QemuExitCode::Success);//运行完测试之后退出qemu，防止无限递归
 }
 #[test_case]
 fn trivial_assertion() {
-    serial_print!("trivial assertion... ");
     assert_eq!(1, 1);
-    serial_println!("[ok]");
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -51,5 +49,15 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
         //在oxf4处创建一个新的端口，写入状态码
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
+    }
+}
+pub trait Testable {
+    fn run(&self) -> ();
+}
+impl<T> Testable for T where T: Fn() {
+    fn run(&self) {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");
     }
 }
