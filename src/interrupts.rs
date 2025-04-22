@@ -15,6 +15,8 @@ lazy_static! {
         }
         idt[InterruptIndex::Timer.as_usize()]
             .set_handler_fn(timer_interrupt_handler);
+        idt[InterruptIndex::Keyboard.as_usize()]
+            .set_handler_fn(keyboard_interrupt_handler);//处理键盘信号
         idt
     };
 }
@@ -40,6 +42,15 @@ extern "x86-interrupt" fn timer_interrupt_handler(
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
     }
 }
+extern "x86-interrupt" fn keyboard_interrupt_handler(
+    _stack_frame: InterruptStackFrame)
+{
+    print!("k");
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
 #[test_case]
 fn test_breakpoint_exception() {
     // 测试断点异常能够被正常捕获
@@ -54,6 +65,7 @@ pub static PICS: spin::Mutex<ChainedPics> =
 #[repr(u8)]
 pub enum InterruptIndex {
     Timer = PIC_1_OFFSET,
+    Keyboard,
 }
 impl InterruptIndex {
     fn as_u8(self) -> u8 {
