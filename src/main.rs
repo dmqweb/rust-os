@@ -15,12 +15,19 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)] //条件编译，在运行cargo test时执行test_main代码
     test_main();
     println!("It did not crash!");
-    loop {
-        use blog_os::print;
-        print!("-"); //添加上之后程序只输出了有限的中划线，因为计时器中断对应的处理函数触发了输出宏中潜在的死锁
-    }
+    // loop {
+    //     use blog_os::print;
+    //     print!("-"); //添加上之后程序只输出了有限的中划线，因为计时器中断对应的处理函数触发了输出宏中潜在的死锁
+    // }
+    blog_os::hlt_loop();
 }
+// #[panic_handler]
+// fn panic(info: &PanicInfo) -> ! {
+//     blog_os::test_panic_handler(info)
+// }
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    blog_os::test_panic_handler(info)
+    println!("{}", info);
+    blog_os::hlt_loop();
 }

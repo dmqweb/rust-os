@@ -33,7 +33,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {//格式化错误信息
     serial_println!("[test_panic_handler失败]\n");
     serial_println!("错误信息: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
 #[cfg(test)]
 #[unsafe(no_mangle)]
@@ -41,7 +41,7 @@ pub extern "C" fn _start() -> ! {
     init();
     #[cfg(test)]
     test_main();
-    loop {}
+    hlt_loop();
 }
 #[cfg(test)]
 #[panic_handler]
@@ -67,4 +67,9 @@ pub fn init() {//main.rs、lib.rs及单元测试共享的初始化逻辑
     exit_qemu(QemuExitCode::Success);//退出qemu,不然会触发panic，和test_panic_handler导致double fault
     unsafe { interrupts::PICS.lock().initialize() };//进行PIC初始化
     x86_64::instructions::interrupts::enable();//启用中断
+}
+pub fn hlt_loop() -> ! {//fix:当前cpu会高速运转，QEMU的CPU占用率高达100%
+    loop {
+        x86_64::instructions::hlt();//hlt指令可以让CPU在下一个中断触发之前休息一下，进入休眠状态节省能源
+    }
 }
