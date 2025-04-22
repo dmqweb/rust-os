@@ -65,4 +65,6 @@ pub fn init() {//main.rs、lib.rs及单元测试共享的初始化逻辑
     gdt::init();
     interrupts::init_idt();
     exit_qemu(QemuExitCode::Success);//退出qemu,不然会触发panic，和test_panic_handler导致double fault
+    unsafe { interrupts::PICS.lock().initialize() };//进行PIC初始化
+    x86_64::instructions::interrupts::enable();//启用中断
 }

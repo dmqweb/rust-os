@@ -9,9 +9,9 @@ use blog_os::println;
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     blog_os::init();
-    unsafe {
-        *(0xdeadbeef as *mut u8) = 42;
-    };
+    // unsafe {
+    //     *(0xdeadbeef as *mut u8) = 42;
+    // };
     #[cfg(test)] //条件编译，在运行cargo test时执行test_main代码
     test_main();
     println!("It did not crash!");
