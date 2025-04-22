@@ -30,8 +30,8 @@ pub fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 pub fn test_panic_handler(info: &PanicInfo) -> ! {//格式化错误信息
-    serial_println!("[failed]\n");
-    serial_println!("Error: {}\n", info);
+    serial_println!("[test_panic_handler失败]\n");
+    serial_println!("错误信息: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
     loop {}
 }
@@ -39,13 +39,14 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {//格式化错误信息
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     init();
+    #[cfg(test)]
     test_main();
     loop {}
 }
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    test_panic_handler(info)
+    test_panic_handler(info) //测试double fault（当panic时再次panic就会触发）
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -63,4 +64,5 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub fn init() {//main.rs、lib.rs及单元测试共享的初始化逻辑
     gdt::init();
     interrupts::init_idt();
+    exit_qemu(QemuExitCode::Success);//退出qemu,不然会触发panic，和test_panic_handler导致double fault
 }

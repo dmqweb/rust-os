@@ -5,15 +5,19 @@
 #![reexport_test_harness_main = "test_main"]
 #![allow(dead_code,unused_variables,unused)]
 use core::panic::PanicInfo;
+use blog_os::{exit_qemu, QemuExitCode};
+
 #[unsafe(no_mangle)] // 编译时保持函数名
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn _start(){
     test_main();
-    loop {}
+    exit_qemu(QemuExitCode::Success);//运行后退出qemu
+    // loop {}
 }
 fn test_runner(tests: &[&dyn Fn()]) {
-    unimplemented!();
+    // unimplemented!();//标记尚未实现的代码，用于占据未实现的功能
 }
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    panic(info);
     loop {}
 }
