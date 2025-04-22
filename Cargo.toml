@@ -16,6 +16,7 @@ spin = "0.5.2" # 自旋锁
 x86_64 = "0.14.2" # 使用其提供的抽象调用共isa-debug-exit的in/out指令
 uart_16550 = "0.2.0" # 通过串行端口将QEMU中的输出重定向（因为测试框架运行后退出，看不到输出）
 pic8259 = "0.10.1" # 通过往指令和数据端口写入特定数据对配置进行编程
+pc-keyboard = "0.7.0" # 处理键盘到数字的映射
 [dependencies.lazy_static] # 延迟静态变量初始化
 version = "1.0"
 features = ["spin_no_std"] # 程序不链接标准库
