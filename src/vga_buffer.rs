@@ -139,7 +139,10 @@ macro_rules! println { //定义println宏
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| { //使一个闭包在无中断环境下执行，让Mutex的执行逻辑及不会被中断信号打断，防止死锁打断
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 #[test_case]
 fn test_println_simple() {
