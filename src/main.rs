@@ -9,16 +9,21 @@ use blog_os::{println};
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     blog_os::init();
-    // unsafe {
-    //     *(0xdeadbeef as *mut u8) = 42;
-    // };
+    // 内核中页表的存储方式：
+    use x86_64::registers::control::Cr3;
+    let (level_4_page_table, _) = Cr3::read();
+    // 分页功能启动时，直接访问物理内存是禁止的，否则程序就很容易侵入其他程序的内存，可以构建一个指向物理地址的虚拟页
+    println!("4级页表地址： {:?}", level_4_page_table.start_address());
+    let ptr = 0x2031b2 as *mut u8;//测试异常的虚拟地址
+    unsafe {
+        let x = *ptr;
+        println!("读取正常:{}",x);
+    }
+    unsafe {*ptr = 42;}
+    println!("写入失败，page fault，因为该页设置了只读权限");
     #[cfg(test)] //条件编译，在运行cargo test时执行test_main代码
     test_main();
     println!("It did not crash!");
-    // loop {
-    //     use blog_os::print;
-    //     print!("-"); //添加上之后程序只输出了有限的中划线，因为计时器中断对应的处理函数触发了输出宏中潜在的死锁
-    // }
     blog_os::hlt_loop();
 }
 #[panic_handler]
