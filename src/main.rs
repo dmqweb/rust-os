@@ -21,11 +21,27 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         if !entry.is_unused() {
             println!("L4 Entry {}: {:?}", i, entry);
         }
+        use x86_64::structures::paging::PageTable;
+        if !entry.is_unused() {
+            println!("L4 Entry {}: {:?}", i, entry);
+            // 从entry中获取物理地址并覆盖
+            let phys = entry.frame().unwrap().start_address();
+            let virt = phys.as_u64() + boot_info.physical_memory_offset;
+            let ptr = VirtAddr::new(virt).as_mut_ptr();
+            let l3_table: &PageTable = unsafe { &*ptr };
+            // 输出3级别页表中的非空entry
+            for (i, entry) in l3_table.iter().enumerate() {
+                if !entry.is_unused() {
+                    println!("  L3 Entry {}: {:?}", i, entry);
+                }
+            }
+        }
     }
     #[cfg(test)]
     test_main();
     println!("It did not crash!");
     blog_os::hlt_loop();
+
 }
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
